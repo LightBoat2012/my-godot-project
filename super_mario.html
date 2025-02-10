@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Super Mario Random Map</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            touch-action: none;
+        }
+        canvas {
+            background: #87CEEB;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 40,
+            height: 40,
+            velocityX: 0,
+            velocityY: 0,
+            isJumping: false,
+            score: 0
+        };
+
+        // 输入处理
+        function setupInput() {
+            // 鼓励键盘和触控输入
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+            
+            // 鼓励鼠标和触控事件
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('click', handleJump);
+            
+            // 触控事件
+            canvas.addEventListener('touchstart', handleTouchStart);
+            canvas.addEventListener('touchmove', handleTouchMove);
+            canvas.addEventListener('touchend', handleTouchEnd);
+        }
+
+        function handleKeyDown(e) {
+            if (e.code === 'ArrowLeft') {
+                player.velocityX = -5;
+            } else if (e.code === 'ArrowRight') {
+                player.velocityX = 5;
+            } else if (e.code === 'Space') {
+                if (!player.isJumping) {
+                    player.velocityY = -15;
+                    player.isJumping = true;
+                }
+            }
+        }
+
+        function handleKeyUp(e) {
+            player.velocityX = 0;
+        }
+
+        function handleMouseMove(e) {
+            player.x = e.clientX - canvas.width/2;
+            player.y = e.clientY - canvas.height/2;
+        }
+
+        function handleJump() {
+            if (!player.isJumping) {
+                player.velocityY = -15;
+                player.isJumping = true;
+            }
+        }
+
+        function handleTouchStart(e) {
+            player.x = e.touches[0].clientX - canvas.width/2;
+            player.y = e.touches[0].clientY - canvas.height/2;
+        }
+
+        function handleTouchMove(e) {
+            player.x = e.touches[0].clientX - canvas.width/2;
+            player.y = e.touches[0].clientY - canvas.height/2;
+        }
+
+        function handleTouchEnd(e) {
+            if (e.touches.length === 1) {
+                if (!player.isJumping) {
+                    player.velocityY = -15;
+                    player.isJumping = true;
+                }
+            }
+        }
+
+        // 随机地图生成函数
+        function generateRandomMap() {
+            // 生成平台
+            while (map.platforms.length < 5) {
+                const platform = {
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 100,
+                    width: 100,
+                    height: 20,
+                    isPassable: Math.random() > 0.5
+                };
+                map.platforms.push(platform);
+            }
+
+            // 生成星星
+            while (map.stars.length < 10) {
+                const star = {
+                    x: Math.random() * (canvas.width - 30) + 30,
+                    y: Math.random() * (canvas.height - 30) + 30,
+                    radius: Math.random() * 10 + 5
+                };
+                map.stars.push(star);
+            }
+
+            // 生成陷阱
+            while (map.traps.length < 5) {
+                const trap = {
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 100,
+                    width: 50,
+                    height: 50,
+                    isPassable: Math.random() > 0.7
+                };
+                map.traps.push(trap);
+            }
+
+            // 生成对话框
+            while (map.dialogues.length < 3) {
+                const dialogue = {
+                    x: Math.random() * (canvas.width - 200) + 100,
+                    y: Math.random() * (canvas.height - 100) + 100,
+                    text: ["Hello Mario!", "Save the princess!", "Watch out for the traps!"][Math.floor(Math.random() * 3)]
+                };
+                map.dialogues.push(dialogue);
+            }
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            // 清除Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制地图
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制平台
+            map.platforms.forEach(platform => {
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+
+            // 绘制星星
+            map.stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+            });
+
+            // 绘制陷阱
+            map.traps.forEach(trap => {
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+            });
+
+            // 绘制对话框
+            map.dialogues.forEach(dialogue => {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(dialogue.x, dialogue.y, 200, 50);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '20px Arial';
+                ctx.fillText(dialogue.text, dialogue.x + 10, dialogue.y + 10);
+            });
+
+            // 更新玩家位置
+            player.velocityX += 0.5;
+            player.velocityY += 0.5;
+            player.x += player.velocityX;
+            player.y += player.velocityY;
+
+            // 检查是否跳跃
+            if (player.isJumping) {
+                player.velocityY = -15;
+                player.isJumping = false;
+            }
+
+            // 检查是否碰到陷阱
+            map.traps.forEach(trap => {
+                if (player.x < trap.x + trap.width && 
+                    player.x + player.width > trap.x && 
+                    player.y < trap.y + trap.height && 
+                    player.y + player.height > trap.y) {
+                    alert('Game Over!');
+                    location.reload();
+                }
+            });
+
+            // 绘制玩家
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // 绘制头部
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(player.x, player.y - 20, player.width, 20);
+
+            // 绘制脚
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(player.x + 20, player.y + 20, player.width - 40, 20);
+
+            // 绘制面部
+            ctx.fillStyle = '#333333';
+            ctx.beginPath();
+            ctx.arc(player.x + 20, player.y - 10, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制眼睛
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(player.x + 30, player.y - 10, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制嘴巴
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(player.x + 25, player.y - 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制分数
+            ctx.fillStyle = '#000000';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${player.score}`, 10, 50);
+
+            // 检查是否收集星星
+            map.stars.forEach(star => {
+                if (player.x < star.x + star.radius && 
+                    player.x + player.width > star.x - star.radius) {
+                    player.score += 100;
+                    map.stars.splice(map.stars.indexOf(star), 1);
+                    ctx.clearRect(star.x, star.y, star.radius, star.radius);
+                }
+            });
+
+            // 更新游戏状态
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 开始游戏
+        generateRandomMap();
+        setupInput();
+        gameLoop();
+    </script>
+</body>
+</html>

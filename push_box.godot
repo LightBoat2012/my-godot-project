@@ -1,0 +1,56 @@
+scene {
+    size = 800x600
+
+    player = Node2D.new()
+    player.position = Vector2(400, 500)
+    player.z = 1
+
+    box = Node2D.new()
+    box.position = Vector2(400, 300)
+    box.z = 1
+    box.set_size(40,40)
+    box.set_collision_mask(1 << 4)
+
+    target = Node2D.new()
+    target.position = Vector2(600, 300)
+    target.set_color(Color.red)
+
+    ground = Node2D.new()
+    ground.position = Vector2(0, 0)
+    ground.set_color(Color.gray)
+
+    animation_player = AnimationPlayer.new()
+    animation_player.play("box_move")
+
+    player.add_collision_handler(0, box, "player_box_collide")
+    box.add_collision_handler(0, player, "box_player_collide")
+
+    player.input = self
+    player.connect("input", self, "_on_input")
+
+    move_speed = 0
+    push_speed = 0
+
+    def _on_input(self, key):
+        if key.is_down(SingletonKey.KEY_LEFT):
+            move_speed = -5
+        elif key.is_down(SingletonKey.KEY_RIGHT):
+            move_speed = 5
+        elif key.is_down(SingletonKey.KEY_UP):
+            push_speed = 5
+        elif key.is_down(SingletonKey.KEY_DOWN):
+            push_speed = -5
+
+        self.player.position.x += move_speed
+        self.player.position.y -= push_speed
+
+        if self.player.get_collider() == self.box:
+            self.player.position.x = self.box.position.x - 20
+            self.player.position.y = self.box.position.y - 20
+
+        if self.box.position.x >= 600:
+            self.box.position.x = 600
+            self.box.position.y = 300
+            self.box.set_position(Vector2(600, 300))
+
+    self.init()

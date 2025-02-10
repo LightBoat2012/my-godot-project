@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机美食推荐</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #food-recommend {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card p-4">
+            <h1 class="mb-4">今天的美食预言</h1>
+            <div class="d-grid gap-3">
+                <button class="btn btn-primary" id="toggleButton" onclick="suggestFood()">
+                    点击开始美食轮盘
+                </button>
+            </div>
+            <div id="food-recommend" class="mt-3"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const foodOptions = [
+            "炸鸡",
+            "披萨",
+            "拉面",
+            "火锅",
+            "寿司",
+            "法式煎饼",
+            "酸辣粉",
+            "牛肉面",
+            "海鲜",
+            "甜品"
+        ];
+
+        const funnyAdviceOptions = [
+            "今天的美食预言：准备好被打脸包了",
+            "吃货模式切换：速食至死",
+            "今日必吃清单：不吃不行",
+            "今天的美食之路：随机漫步",
+            "美食警告：可能会有辣",
+            "今日美食目标：解锁新味蕾"
+        ];
+
+        let isRunning = false;
+        let intervalId = null;
+
+        function suggestFood() {
+            const button = document.getElementById('toggleButton');
+            
+            if (isRunning) {
+                // 停止轮播
+                clearInterval(intervalId);
+                isRunning = false;
+                button.textContent = "点击开始美食轮盘";
+            } else {
+                // 开始轮播
+                isRunning = true;
+                button.textContent = "点击停止选定美食";
+                
+                intervalId = setInterval(() => {
+                    const randomFood = foodOptions[Math.floor(Math.random() * foodOptions.length)];
+                    const funnyAdvice = funnyAdviceOptions[Math.floor(Math.random() * funnyAdviceOptions.length)];
+                    
+                    document.getElementById('food-recommend').innerHTML = `
+                        <div class="alert alert-info">
+                            <h4>今日美食推荐</h4>
+                            <p>今天的美味目标：${randomFood}</p>
+                            <p class="food-advice">${funnyAdvice}</p>
+                        </div>
+                    `;
+                }, 100);  // 每100ms切换一次
+            }
+        }
+    </script>
+</body>
+</html>
